@@ -15,7 +15,6 @@ import (
 	"github.com/alexcesaro/mail/quotedprintable"
 	"github.com/reubenmiller/smtpd/config"
 	"github.com/reubenmiller/smtpd/log"
-	"github.com/sloonz/go-iconv"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -77,6 +76,14 @@ type Attachment struct {
 	Size             int
 }
 
+func ConvertString(str string) string {
+	dec := new(mime.WordDecoder)
+	convstr, err := dec.Decode(str)
+	if err == nil {
+		return convstr
+	}
+	panic(err)
+}
 // TODO support nested MIME content
 func ParseSMTPMessage(m *config.SMTPMessage, hostname string, mimeParser bool) *Message {
 	arr := make([]*Path, 0)
@@ -356,7 +363,9 @@ func MimeBodyDecode(str string, charset string, encoding string) string {
 	if charset != "UTF-8" {
 		charset = fixCharset(charset)
 		// eg. charset can be "ISO-2022-JP"
-		if convstr, err := iconv.Conv(str, "UTF-8", charset); err == nil {
+		dec := new(mime.WordDecoder)
+		// if convstr, err := iconv.Conv(str, "UTF-8", charset); err == nil {
+		if convstr, err := dec.DecodeHeader(str); err == nil {
 			return convstr
 		}
 	}
