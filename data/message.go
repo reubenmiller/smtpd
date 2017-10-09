@@ -323,7 +323,9 @@ func MimeHeaderDecode(str string) string {
 	if err == nil && charset != "UTF-8" {
 		charset = fixCharset(charset)
 		// eg. charset can be "ISO-2022-JP"
-		convstr, err := iconv.Conv(str, "UTF-8", charset)
+		dec := new(mime.WordDecoder)
+		convstr, err := dec.DecodeHeader(str)
+		// convstr, err := iconv.Conv(str, "UTF-8", charset)
 		if err == nil {
 			return convstr
 		}
