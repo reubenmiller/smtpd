@@ -419,8 +419,10 @@ func (c *Client) greetHandler(cmd string, arg string) {
 func (c *Client) mailHandler(cmd string, arg string) {
 	if cmd == "MAIL" {
 		if c.helo == "" {
-			c.Write("502", "Please introduce yourself first.")
-			return
+			// Ignore this case, because it should still save the email
+			// TODO: Verify that this is not a problem.
+			// c.Write("502", "Please introduce yourself first.")
+			// return
 		}
 
 		// Match FROM, while accepting '>' as quoted pair and in double quoted strings
