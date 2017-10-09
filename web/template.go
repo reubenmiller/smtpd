@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gleez/smtpd/log"
+	"github.com/reubenmiller/smtpd/log"
 	"github.com/microcosm-cc/bluemonday"
 )
 

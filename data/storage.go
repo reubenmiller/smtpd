@@ -5,8 +5,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/gleez/smtpd/config"
-	"github.com/gleez/smtpd/log"
+	"github.com/reubenmiller/smtpd/config"
+	"github.com/reubenmiller/smtpd/log"
 	"gopkg.in/mgo.v2/bson"
 )
 

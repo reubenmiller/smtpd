@@ -60,7 +60,7 @@ Grab the Smtpd source code and compile the daemon:
 Edit etc/smtpd.conf and tailor to your environment.  It should work on most
 Unix and OS X machines as is.  Launch the daemon:
 
-    $GOPATH/bin/smtpd -config=$GOPATH/src/github.com/gleez/smtpd/etc/smtpd.conf
+    $GOPATH/bin/smtpd -config=$GOPATH/src/github.com/reubenmiller/smtpd/etc/smtpd.conf
 
 By default the SMTP server will be listening on localhost port 25000 and
 the web interface will be available at [localhost:10025](http://localhost:10025/).

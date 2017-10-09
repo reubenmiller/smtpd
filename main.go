@@ -14,11 +14,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gleez/smtpd/config"
-	"github.com/gleez/smtpd/data"
-	"github.com/gleez/smtpd/log"
-	"github.com/gleez/smtpd/smtpd"
-	"github.com/gleez/smtpd/web"
+	"github.com/reubenmiller/smtpd/config"
+	"github.com/reubenmiller/smtpd/data"
+	"github.com/reubenmiller/smtpd/log"
+	"github.com/reubenmiller/smtpd/smtpd"
+	"github.com/reubenmiller/smtpd/web"
 )
 
 var (
