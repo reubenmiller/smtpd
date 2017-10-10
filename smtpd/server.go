@@ -78,27 +78,28 @@ type Server struct {
 }
 
 type Client struct {
-	server     *Server
-	state      State
-	helo       string
-	from       string
-	recipients []string
-	response   string
-	remoteHost string
-	sendError  error
-	data       string
-	subject    string
-	hash       string
-	time       int64
-	tls_on     bool
-	conn       net.Conn
-	bufin      *bufio.Reader
-	bufout     *bufio.Writer
-	kill_time  int64
-	errors     int
-	id         int64
-	tlsConn    *tls.Conn
-	trusted    bool
+	server      *Server
+	state       State
+	helo        string
+	from        string
+	recipients  []string
+	response    string
+	remoteHost  string
+	sendError   error
+	data        string
+	subject     string
+	hash        string
+	time        int64
+	tls_on      bool
+	conn        net.Conn
+	bufin       *bufio.Reader
+	bufout      *bufio.Writer
+	kill_time   int64
+	errors      int
+	id          int64
+	tlsConn     *tls.Conn
+	trusted     bool
+	requireHelo bool
 }
 
 // Init a new Client object
@@ -222,14 +223,15 @@ func (s *Server) Start() {
 
 			s.sem <- 1 // Wait for active queue to drain.
 			go s.handleClient(&Client{
-				state:      1,
-				server:     s,
-				conn:       conn,
-				remoteHost: host,
-				time:       time.Now().Unix(),
-				bufin:      bufio.NewReader(conn),
-				bufout:     bufio.NewWriter(conn),
-				id:         clientId,
+				state:       1,
+				server:      s,
+				conn:        conn,
+				remoteHost:  host,
+				time:        time.Now().Unix(),
+				bufin:       bufio.NewReader(conn),
+				bufout:      bufio.NewWriter(conn),
+				id:          clientId,
+				requireHelo: false,	// Dont require Helo
 			})
 		}
 	}
@@ -418,11 +420,9 @@ func (c *Client) greetHandler(cmd string, arg string) {
 // READY state -> waiting for MAIL
 func (c *Client) mailHandler(cmd string, arg string) {
 	if cmd == "MAIL" {
-		if c.helo == "" {
-			// Ignore this case, because it should still save the email
-			// TODO: Verify that this is not a problem.
-			// c.Write("502", "Please introduce yourself first.")
-			// return
+		if c.helo == "" && c.requireHelo == true {
+			c.Write("502", "Please introduce yourself first.")
+			return
 		}
 
 		// Match FROM, while accepting '>' as quoted pair and in double quoted strings
@@ -534,7 +534,7 @@ func (c *Client) rcptHandler(cmd string, arg string) {
 
 func (c *Client) authHandler(cmd string, arg string) {
 	if cmd == "AUTH" {
-		if c.helo == "" {
+		if c.helo == "" && c.requireHelo == true {
 			c.Write("502", "Please introduce yourself first.")
 			return
 		}
