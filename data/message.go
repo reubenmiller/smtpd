@@ -226,12 +226,14 @@ func ParseMIME(MIMEBody *MIMEBody, reader io.Reader, boundary string, message *M
 				}
 
 				if disposition == "attachment" || disposition == "inline" {
-					//log.LogTrace("Found attachment: '%s'", disposition)
-					part.FileName = MimeHeaderDecode(dparams["filename"])
+					log.LogTrace("Found attachment: '%s'", disposition)
+					part.FileName = MimeHeaderDecode(dparams["filename"])	
+				}
 
-					if part.FileName == "" && mparams["name"] != "" {
-						part.FileName = MimeHeaderDecode(mparams["name"])
-					}
+				// Check if the name of the file is directly in the Content-Type without depending on the deposition
+				if part.FileName == "" && mparams["name"] != "" {
+					part.FileName = MimeHeaderDecode(mparams["name"])
+					log.LogInfo("Found filename: '%s'", part.FileName)
 				}
 
 				// Save attachments
