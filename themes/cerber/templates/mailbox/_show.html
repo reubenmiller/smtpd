@@ -34,9 +34,13 @@
 			<dt>To</dt>
 			<dd>{{range .message.To}} {{.Mailbox }}@{{.Domain }} {{end}}</dd>
 			<dt>Date</dt>
+			<dd>{{.message.Timestamp}}</dd>
+			<dt>Received At</dt>
 			<dd>{{.message.Created}}</dd>
 			<dt>Client IP</dt>
 			<dd>{{.message.Ip}}</dd>
+			<dt>Id</dt>
+			<dd>{{.message.Id}}</dd>
 		</dl>
 	</div>
 
@@ -45,7 +49,7 @@
 			<ul class="nav nav-pills">
 				{{range $e := .message.Attachments }}
 					{{if $e.FileName }}
-						<li class="active"><a href="/mail/attachment/{{$e.Id}}/{{$e.FileName}}" target="_blank">{{$e.FileName}}</a></li>
+						<li class="active"><a href="/mail/attachment/{{$e.Id}}/{{$e.FileName}}" target="_blank">{{$e.FileName}} ({{convertBytesToMB ($e.Size)}}KB)</a></li>
 					{{end}}
 				{{end}}
 			</ul>
@@ -58,8 +62,8 @@
 		<br>
 		<!-- Nav tabs -->
 		<ul class="nav nav-tabs" role="tablist">
-			<li class="active"><a href="#htmlmsg" role="tab" data-toggle="tab">HTML</a></li>
-			<li><a href="#textmsg" role="tab" data-toggle="tab">Plain Text</a></li>
+			<li><a href="#htmlmsg" role="tab" data-toggle="tab">HTML</a></li>
+			<li class="active"><a href="#textmsg" role="tab" data-toggle="tab">Plain Text</a></li>
 			<li><a href="#headers" role="tab" data-toggle="tab">Headers</a></li>
 		</ul>
 

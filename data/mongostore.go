@@ -77,6 +77,7 @@ func (mongo *MongoDB) List(start int, limit int) (*Messages, error) {
 		"to":          1,
 		"attachments": 1,
 		"created":     1,
+		"timestamp":   1,
 		"ip":          1,
 		"subject":     1,
 		"starred":     1,

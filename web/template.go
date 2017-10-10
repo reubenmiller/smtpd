@@ -25,6 +25,7 @@ var TemplateFuncs = template.FuncMap{
 	"friendlyTime": friendlyTime,
 	"reverse":      reverse,
 	"textToHtml":   textToHtml,
+	"convertBytesToMB":	convertBytesToMB,
 }
 
 // From http://daringfireball.net/2010/07/improved_regex_for_matching_urls
@@ -110,10 +111,14 @@ func htmlSafe(text string) template.HTML {
 func friendlyTime(t time.Time) template.HTML {
 	ty, tm, td := t.Date()
 	ny, nm, nd := time.Now().Date()
-	if (ty == ny) && (tm == nm) && (td == nd) {
-		return template.HTML(t.Format("03:04:05 PM"))
+
+	if ty > 1 {
+		if (ty == ny) && (tm == nm) && (td == nd) {
+			return template.HTML(t.Format("03:04:05 PM"))
+		}
+		return template.HTML(t.Format("Mon Jan 2, 2006"))
 	}
-	return template.HTML(t.Format("Mon Jan 2, 2006"))
+	return ""
 }
 
 // textToHtml takes plain text, escapes it and tries to pretty it up for
@@ -145,4 +150,12 @@ func reverse(name string, things ...interface{}) string {
 		return "/ROUTE-ERROR"
 	}
 	return u.Path
+}
+
+func Round(x, unit float64) float64 {
+    return float64(int64(x/unit+0.5)) * unit
+}
+
+func convertBytesToMB(sizeInBytes int) int {
+	return sizeInBytes / 1024 
 }

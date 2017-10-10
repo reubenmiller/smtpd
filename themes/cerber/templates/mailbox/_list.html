@@ -71,10 +71,19 @@
 									{{if .Attachments}}
 										<span class="glyphicon glyphicon-paperclip"></span>
 									{{end}}
-							    </div>
-							    <div class="date col-md-1">
-							    	<div class="badge pull-right">{{.Created | friendlyTime}}</div>
-							    </div>
+								</div>
+								<div class="attach col-md-1">
+										{{if .Attachments}}
+											<span class="size" style="margin: 0; padding: 0; font-size: 12px;">{{convertBytesToMB ((index .Attachments 0).Size)}}KB</span>
+										{{end}}
+								</div>
+
+								<div class="date col-md-1">
+									{{if .Timestamp}}
+										<div class="badge pull-right" title="Received by SMTP Server: {{.Created}}">{{.Timestamp | friendlyTime}}</div>
+									{{end}}
+								</div>
+								
 							    <div class="clearfix"></div>
 							</a>
 						{{else}}

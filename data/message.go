@@ -27,6 +27,7 @@ type Message struct {
 	To          []*Path
 	Created     time.Time
 	Attachments []*Attachment
+	Timestamp	time.Time
 	Ip          string
 	Content     *Content
 	MIME        *MIMEBody
@@ -110,6 +111,16 @@ func ParseSMTPMessage(m *config.SMTPMessage, hostname string, mimeParser bool) *
 			msg.Content.Headers = rm.Header
 			msg.Subject = MimeHeaderDecode(rm.Header.Get("Subject"))
 
+			if rm.Header.Get("Date") != "" {
+				// Store the date that the email was created by the sender of the email
+				layout := "Mon, 2 Jan 2006 15:04:05 -0700 (MST)"
+				t, err := time.Parse(layout, rm.Header.Get("Date"))
+
+				if err == nil {
+					msg.Timestamp = t
+				}
+			}
+
 			if mt, p, err := mime.ParseMediaType(rm.Header.Get("Content-Type")); err == nil {
 				if strings.HasPrefix(mt, "multipart/") {
 					log.LogTrace("Parsing MIME Message")
@@ -181,6 +192,7 @@ func ParseMIME(MIMEBody *MIMEBody, reader io.Reader, boundary string, message *M
 		}
 
 		if len(mrp.Header) == 0 {
+			log.LogTrace("MultiPart header is empty for some reason")
 			// Empty header probably means the part didn't using the correct trailing "--"
 			// syntax to close its boundary.  We will let this slide if this this the
 			// last MIME part.
@@ -189,6 +201,7 @@ func ParseMIME(MIMEBody *MIMEBody, reader io.Reader, boundary string, message *M
 					// This is what we were hoping for
 					break
 				} else {
+					log.LogError("Error at boundary %v: %v", boundary, err)
 					return fmt.Errorf("Error at boundary %v: %v", boundary, err)
 				}
 			}
@@ -198,7 +211,7 @@ func ParseMIME(MIMEBody *MIMEBody, reader io.Reader, boundary string, message *M
 
 		ctype := mrp.Header.Get("Content-Type")
 		if ctype == "" {
-			fmt.Errorf("Missing Content-Type at boundary %v", boundary)
+			_ = fmt.Errorf("Missing Content-Type at boundary %v", boundary)
 		}
 
 		mediatype, mparams, err := mime.ParseMediaType(ctype)
@@ -206,12 +219,15 @@ func ParseMIME(MIMEBody *MIMEBody, reader io.Reader, boundary string, message *M
 			return err
 		}
 
+		log.LogTrace("MediaType: '%s'", mediatype)
+
 		encoding := mrp.Header.Get("Content-Transfer-Encoding")
 		// Figure out our disposition, filename
 		disposition, dparams, err := mime.ParseMediaType(mrp.Header.Get("Content-Disposition"))
 
 		if strings.HasPrefix(mediatype, "multipart/") && mparams["boundary"] != "" {
 			// Content is another multipart
+			log.LogTrace("Detected multipart/. Boundary: '%s'", mparams["boundary"])
 			ParseMIME(MIMEBody, mrp, mparams["boundary"], message)
 		} else {
 			if n, body, err := Partbuf(mrp); err == nil {
@@ -230,6 +246,8 @@ func ParseMIME(MIMEBody *MIMEBody, reader io.Reader, boundary string, message *M
 					part.FileName = MimeHeaderDecode(dparams["filename"])	
 				}
 
+				log.LogTrace("Current mparams[name]: '%s'", mparams["name"])
+
 				// Check if the name of the file is directly in the Content-Type without depending on the deposition
 				if part.FileName == "" && mparams["name"] != "" {
 					part.FileName = MimeHeaderDecode(mparams["name"])
@@ -237,7 +255,7 @@ func ParseMIME(MIMEBody *MIMEBody, reader io.Reader, boundary string, message *M
 				}
 
 				// Save attachments
-				if disposition == "attachment" && len(part.FileName) > 0 {
+				if disposition == "attachment" || len(part.FileName) > 0 {
 					log.LogTrace("Found attachment: '%s'", disposition)
 					//db.messages.find({ 'attachments.id': "54200a938b1864264c000005" }, {"attachments.$" : 1})
 					attachment := &Attachment{
@@ -251,6 +269,7 @@ func ParseMIME(MIMEBody *MIMEBody, reader io.Reader, boundary string, message *M
 					}
 					message.Attachments = append(message.Attachments, attachment)
 				} else {
+					log.LogTrace("No disposition or filename detected. But the MIME parts will be saved")
 					MIMEBody.Parts = append(MIMEBody.Parts, part)
 				}
 
