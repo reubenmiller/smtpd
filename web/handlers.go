@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 	"time"
+	"encoding/json"
 
 	"github.com/reubenmiller/smtpd/config"
 	"github.com/reubenmiller/smtpd/data"
@@ -163,8 +164,8 @@ func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error
 	kind := r.URL.Query().Get("kind")
 	if kind != "from" && kind != "to" && kind != "subject" && kind != "containing" {
 		log.LogError("Query kind is invalid '%s'", kind)
-		w.WriteHeader(400)
-		return
+		// w.WriteHeader(400)
+		return MailList(w, r, ctx)
 	}
 
 	query := r.URL.Query().Get("query")
@@ -187,7 +188,17 @@ func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error
 	log.LogInfo("Found %d messages with query '%s'", total, query)
 
 	if err == nil {
-		return RenderTemplate("mailbox/_list.html", w, map[string]interface{}{
+		jsontype := r.URL.Query().Get("json")
+		
+		if jsontype == "true" {
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewEncoder(w).Encode(messages); err != nil {
+				panic(err)
+			}
+			return
+			// return SearchAPI(w, r, messages)
+		}
+		return RenderTemplate("mailbox/_list.v2.html", w, map[string]interface{}{
 			"ctx":        ctx,
 			"title":      "Mails",
 			"messages":   messages,
@@ -199,6 +210,12 @@ func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error
 		return
 	}
 }
+ 
+/* func SearchAPI(w http.ResponseWriter, r *http.Request, messages *Messages) {
+    if err := json.NewEncoder(w).Encode(messages); err != nil {
+        panic(err)
+    }
+} */
 
 func Home(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
 	greeting, err := ioutil.ReadFile(config.GetWebConfig().GreetingFile)

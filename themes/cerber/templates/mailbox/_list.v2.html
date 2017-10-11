@@ -1,0 +1,124 @@
+{{define "title"}}Inbox :: Gleez SMTPD{{end}}
+
+{{define "script"}}
+	<script src="/public/js/jquery-1.11.1.min.js"></script>
+	<script src="/public/js/bootstrap.min.js"></script>
+	<script src="/public/js/incus.js"></script>
+	<script src="/public/js/notify.js"></script>
+	<script src="/public/js/bootstrap-table.min.js"></script>
+	<script src="/public/js/moment.min.js"></script>
+	<script src="/public/js/table.js"></script>
+{{end}}
+
+{{define "menu"}}
+	<li><a href="/">Home</a></li>
+	<li><a href="/status">Status</a></li>
+	<li class="active"><a href="/mails">Inbox <span id="NewMail" class="badge"></span></a></li>
+{{end}}
+
+{{define "content"}}
+	<div class="row">
+		<div class="col-md-12">
+			<div class="btn-group">
+				<button type="button" class="btn btn-default">
+					<div class="checkbox1" style="margin: 0; padding: 0; font-size: 9px;">
+						<input type="checkbox">
+					</div>
+				</button>
+				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+					<span class="caret"></span><span class="sr-only">Toggle Dropdown</span>
+				</button>
+				<ul class="dropdown-menu" role="menu">
+					<li><a href="#">All</a></li>
+					<li><a href="#">None</a></li>
+					<li><a href="#">Read</a></li>
+					<li><a href="#">Unread</a></li>
+					<li><a href="#">Starred</a></li>
+					<li><a href="#">Unstarred</a></li>
+				</ul>
+			</div>
+			<button type="button" class="btn btn-default" data-toggle="tooltip" title="Refresh">
+			    &nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh"></span>&nbsp;&nbsp;&nbsp;
+			</button>
+
+			{{if .pagination.Total }}
+				<div class="pull-right">
+					<span class="text-muted"><b>{{if eq .pagination.Offset 0}} 1 {{else}} {{.pagination.Offset }} {{end}}</b> - <b>{{if gt .pagination.Total .end}} {{.end }} {{else}} {{.pagination.Total }} {{end}}</b> of <b>{{.pagination.Total }}</b></span>
+					<div class="btn-group btn-group-sm">{{.pagination.Html 3}}</div>
+				</div>
+			{{end}}
+		</div>
+	</div>
+	<hr>
+	<div id="mails" class="row">
+		<div class="col-md-12">
+			<!-- Nav tabs -->
+			<ul class="nav nav-tabs">
+				<li class="active"><a href="#mails" data-toggle="tab"><span class="glyphicon glyphicon-inbox">
+				</span>Inbox</a></li>
+			</ul>
+			<!-- Tab panes -->
+			<div class="tab-content">
+				<div class="tab-pane fade in active" id="mails">
+                    <div class="table-responsive">
+                    <table
+                        id="tablev2"
+                        data-row-style="rowStyle"
+                        class="list-group"
+                        data-click-to-select="true"
+                        data-sort-stable="true"
+                        data-toggle="table" data-search="true" data-show-columns="true" data-id-field="Id" data-url="/search?kind=subject&query=.*&json=true">
+                            <thead>
+                                <tr>
+                                    <th data-field="-" data-checkbox="true">Selected</th>
+                                    <th data-field="Starred" data-sortable="true" data-formatter="formatStarred">Starred</th>
+                                    <th data-field="Id" data-sortable="true" data-searchable="true" data-visible="false">Id</th>
+                                    <th data-field="To" data-sortable="true" data-visible="false" data-searchable="true" data-formatter="formatToMailAddress">To</th>
+                                    <th data-field="Subject" data-width="25%" data-searchable="true" data-sortable="true">Subject</th>
+                                    <th data-field="From" data-sortable="true" data-searchable="true" data-formatter="formatMailAddress">From</th>
+                                    <th data-field="Timestamp" data-sortable="true" data-formatter="formatTimestamp" data-sortable="true">Timestamp</th>
+                                    <th data-field="Created" data-sortable="true" data-formatter="formatTimestamp" data-sortable="true">Created</th>
+                                    <th data-field="Attachments" data-sortable="true" data-formatter="formatAttachment" data-sortable="true">Attachment</th>
+                                    <th data-field="Unread" data-sortable="true" data-visible="false">Unread</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+					<div class="list-group">
+						{{range .messages}}
+						{{$id := .Id}}
+							<a href="/mail/{{$id}}" class="list-group-item{{if .Unread}} unread {{else}} read{{end}}">
+								<div class="star col-md-1" style="margin: 0; padding: 0; font-size: 9px;">
+									<input type="checkbox">
+								</div>
+								<div class="star col-md-1 glyphicon glyphicon-star-empty"></div>
+								<div class="name col-md-2">{{.From.Mailbox }}@{{.From.Domain }}</div> 
+								<div class="subject col-md-6">{{.Subject}}</div>
+								<div class="attach col-md-1">
+									{{if .Attachments}}
+										<span class="glyphicon glyphicon-paperclip"></span>
+									{{end}}
+								</div>
+								<div class="attach col-md-1">
+										{{if .Attachments}}
+											<span class="size" style="margin: 0; padding: 0; font-size: 12px;">{{convertBytesToMB ((index .Attachments 0).Size)}}KB</span>
+										{{end}}
+								</div>
+
+								<div class="date col-md-1">
+									{{if .Timestamp}}
+										<div class="badge pull-right" title="Received by SMTP Server: {{.Created}}">{{.Timestamp | friendlyTime}}</div>
+									{{end}}
+								</div>
+								
+							    <div class="clearfix"></div>
+							</a>
+						{{else}}
+							No mail items to display. Send some mail!
+						{{end}}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{{end}}

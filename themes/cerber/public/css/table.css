@@ -1,0 +1,13 @@
+tr.mail-unread {
+    color: #222;
+    background-color: #F3F3F3;
+    font-weight: bold;
+}
+
+td {
+    border-width: 0 !important;
+}
+
+tr {
+    border-width: 1;
+}

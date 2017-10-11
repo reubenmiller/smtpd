@@ -91,7 +91,7 @@ func setupRoutes(cfg config.WebConfig) {
 	r.Path("/mail/delete/{id:[0-9a-z]+}").Handler(handler(MailDelete)).Name("MailDelete").Methods("GET")
 
 	// Search for Mails
-	r.Path("/search").Handler(handler(MailSearch)).Name("MailSearch").Methods("GET")
+	r.Path("/search").Handler(handler(MailSearch)).Name("#").Methods("GET")
 
 	// Login
 	r.Path("/login").Handler(handler(Login)).Methods("POST")
