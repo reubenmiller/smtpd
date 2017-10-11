@@ -146,8 +146,7 @@ func MailList(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) 
 	}
 }
 
-// func (apiv2 *APIv2) search(w http.ResponseWriter, req *http.Request) {
-// func MailList(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
+
 func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
 	log.LogTrace("Searching for Mails from Mongodb")
 	
@@ -170,20 +169,14 @@ func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error
 
 	query := r.URL.Query().Get("query")
 	if len(query) == 0 {
-		log.LogError("Query is empty '%s'", query)
-		w.WriteHeader(400)
-		return
+		log.LogError("Query is empty '%s', so the full results will be returned", query)
+		return MailList(w, r, ctx)
 	}
 
-	// messages, total, _ := ctx.Ds.Search(kind, query, p.Offset(), p.Limit())
-	// TODO: Calculate the correct total for the paging
-	messages, total, _ := ctx.Ds.Search(kind, query, 0, 100)
+	sortBy := r.URL.Query().Get("sortBy")
+	sortDirection := r.URL.Query().Get("sortDirection")
 
-	/* _, err := ctx.Ds.Total()
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	} */
+	messages, total, _ := ctx.Ds.Search(kind, query, 0, 100, sortBy, sortDirection)
 
 	p := NewPagination(total, limit, page, "/mails")
 	if page > p.Pages() {

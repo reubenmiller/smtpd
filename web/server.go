@@ -84,7 +84,7 @@ func setupRoutes(cfg config.WebConfig) {
 	r.Path("/status").Handler(handler(Status)).Name("Status").Methods("GET")
 
 	// Mail
-	r.Path("/mails").Handler(handler(MailList)).Name("Mails").Methods("GET")
+	r.Path("/mails").Handler(handler(MailSearch)).Name("Mails").Methods("GET")
 	r.Path("/mails/{page:[0-9]+}").Handler(handler(MailList)).Name("MailList").Methods("GET")
 	r.Path("/mail/{id:[0-9a-z]+}").Handler(handler(MailView)).Name("MailView").Methods("GET")
 	r.Path("/mail/attachment/{id:[0-9a-z]+}/{[*.*]}").Handler(handler(MailAttachment)).Name("MailAttachment").Methods("GET")

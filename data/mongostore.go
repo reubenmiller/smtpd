@@ -195,20 +195,51 @@ func (mongo *MongoDB) StoreSpamIp(s SpamIP) (string, error) {
 }
 
 // Search finds messages matching the query
-func (mongo *MongoDB) Search(kind, query string, start, limit int) (*Messages, int, error) {
+func (mongo *MongoDB) Search(kind, query string, start, limit int, sortBy string, sortDirection string) (*Messages, int, error) {
 	messages := &Messages{}
 	var count = 0
 	var field = "subject"
 	switch kind {
 	case "to":
-		field = "to"
+		field = "to.mailbox"
 	case "from":
-		field = "from"
+		field = "from.mailbox"
 	case "subject":
 		field = "subject"
 	}
+
+	var sortField = "created"
+	switch sortBy {
+	case "created":
+		sortField = "created"
+	case "timestamp":
+		sortField = "timestamp"
+	case "read":
+		sortField = "unread"
+	case "unread":
+		sortField = "unread"
+	case "id":
+		sortField = "_id"
+	case "attachments":
+		sortField = "attachments"
+	}
+
+	if len(sortDirection) == 0 {
+		sortDirection = "-"
+	}
+
+	var sortDirectionPrefix = ""
+	switch sortDirection {
+	case "asc":
+		sortDirectionPrefix = ""
+	case "desc":
+		sortDirectionPrefix = "-"
+	}
+
+	sortField = sortDirectionPrefix + sortField
+
 	log.LogTrace("Searching for message with '%s' on kind '%s'. start: %d, limit %d", query, field, start, limit)
-	err := mongo.Messages.Find(bson.M{ field: bson.RegEx{Pattern: query, Options: "i" }}).Skip(start).Limit(limit).Sort("-_id").Select(bson.M{
+	err := mongo.Messages.Find(bson.M{ field: bson.RegEx{Pattern: query, Options: "i" }}).Skip(start).Limit(limit).Sort(sortField).Select(bson.M{
 		"id":          1,
 		"from":        1,
 		"to":          1,
