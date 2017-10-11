@@ -193,3 +193,41 @@ func (mongo *MongoDB) StoreSpamIp(s SpamIP) (string, error) {
 	}
 	return s.Id.Hex(), nil
 }
+
+// Search finds messages matching the query
+func (mongo *MongoDB) Search(kind, query string, start, limit int) (*Messages, int, error) {
+	messages := &Messages{}
+	var count = 0
+	var field = "subject"
+	switch kind {
+	case "to":
+		field = "to"
+	case "from":
+		field = "from"
+	case "subject":
+		field = "subject"
+	}
+	log.LogTrace("Searching for message with '%s' on kind '%s'. start: %d, limit %d", query, field, start, limit)
+	err := mongo.Messages.Find(bson.M{ field: bson.RegEx{Pattern: query, Options: "i" }}).Skip(start).Limit(limit).Sort("-_id").Select(bson.M{
+		"id":          1,
+		"from":        1,
+		"to":          1,
+		"attachments": 1,
+		"created":     1,
+		"timestamp":   1,
+		"ip":          1,
+		"subject":     1,
+		"starred":     1,
+		"unread":      1,
+	}).All(messages)
+
+	if err != nil {
+		log.LogError("Error loading messages: %s", err)
+		return nil, 0, err
+	}
+	count, _ = mongo.Messages.Find(bson.M{field: bson.RegEx{Pattern: query, Options: "i"}}).Count()
+
+	log.LogInfo("Query results: %d found", count)
+
+	return messages, count, nil
+}

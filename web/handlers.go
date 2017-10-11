@@ -146,10 +146,71 @@ func MailList(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) 
 	}
 }
 
+// func (apiv2 *APIv2) search(w http.ResponseWriter, req *http.Request) {
+// func MailList(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
+func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
+	log.LogTrace("Searching for Mails from Mongodb")
+	
+	page, _ := strconv.Atoi(ctx.Vars["page"])
+	limit := 50
+
+	//we need a user to sign to
+	if ctx.User == nil {
+		log.LogTrace("This page requires a login.")
+		ctx.Session.AddFlash("This page requires a login.")
+		return LoginForm(w, r, ctx)
+	}
+
+	kind := r.URL.Query().Get("kind")
+	if kind != "from" && kind != "to" && kind != "subject" && kind != "containing" {
+		log.LogError("Query kind is invalid '%s'", kind)
+		w.WriteHeader(400)
+		return
+	}
+
+	query := r.URL.Query().Get("query")
+	if len(query) == 0 {
+		log.LogError("Query is empty '%s'", query)
+		w.WriteHeader(400)
+		return
+	}
+
+	// messages, total, _ := ctx.Ds.Search(kind, query, p.Offset(), p.Limit())
+	// TODO: Calculate the correct total for the paging
+	messages, total, _ := ctx.Ds.Search(kind, query, 0, 100)
+
+	/* _, err := ctx.Ds.Total()
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	} */
+
+	p := NewPagination(total, limit, page, "/mails")
+	if page > p.Pages() {
+		http.NotFound(w, r)
+		return
+	}
+
+	log.LogInfo("Found %d messages with query '%s'", total, query)
+
+	if err == nil {
+		return RenderTemplate("mailbox/_list.html", w, map[string]interface{}{
+			"ctx":        ctx,
+			"title":      "Mails",
+			"messages":   messages,
+			"end":        p.Offset() + p.Limit(),
+			"pagination": p,
+		})
+	} else {
+		http.NotFound(w, r)
+		return
+	}
+}
+
 func Home(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
 	greeting, err := ioutil.ReadFile(config.GetWebConfig().GreetingFile)
 	if err != nil {
-		fmt.Errorf("Failed to load greeting: %v", err)
+		_ = fmt.Errorf("Failed to load greeting: %v", err)
 	}
 
 	return RenderTemplate("root/index.html", w, map[string]interface{}{
@@ -201,8 +262,7 @@ func Login(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		ctx.Session.AddFlash("Please fill all fields!")
 		return LoginForm(w, req, ctx)
 	}
-
-	return fmt.Errorf("Failed to login!")
+	// return fmt.Errorf("Failed to login!")
 }
 
 func Logout(w http.ResponseWriter, req *http.Request, ctx *Context) error {
@@ -274,7 +334,7 @@ func Register(w http.ResponseWriter, req *http.Request, ctx *Context) error {
 		return RegisterForm(w, req, ctx)
 	}
 
-	return fmt.Errorf("Failed to register!")
+	// return fmt.Errorf("Failed to register!")
 }
 
 func GreyMailFromAdd(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
