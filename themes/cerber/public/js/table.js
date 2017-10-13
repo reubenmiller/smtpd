@@ -61,3 +61,8 @@ function sortByAttachmentSize(sortName, sortOrder) {
     //You must use `this.data` array in order to sort the data. NO use `this.options.data`.
     this.data
 }
+
+function queryParams(params) {
+    console.log('params', params);
+    return params;
+}

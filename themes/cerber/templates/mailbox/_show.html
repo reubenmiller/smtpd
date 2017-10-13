@@ -69,8 +69,8 @@
 
 		<!-- Tab panes -->
 		<div class="tab-content">
-			<div class="tab-pane active" id="htmlmsg"><br>{{.message.Content.HtmlBody | htmlSafe}}</div>
-			<div class="tab-pane" id="textmsg"><br>{{.message.Content.TextBody | textToHtml}}</div>
+			<div class="tab-pane" id="htmlmsg"><br>{{.message.Content.HtmlBody | htmlSafe}}</div>
+			<div class="tab-pane active" id="textmsg"><br>{{.message.Content.TextBody | textToHtml}}</div>
 			<div class="tab-pane" id="headers">
 				<div class="well">
 					{{range $index, $element := .message.Content.Headers}}
