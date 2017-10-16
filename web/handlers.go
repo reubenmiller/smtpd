@@ -20,6 +20,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+type SearchResults struct {
+	Total    int				`json:"total"`
+	Messages *data.Messages		`json:"rows"`
+}
+
 func MailAttachment(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
 	id := ctx.Vars["id"]
 	log.LogTrace("Loading Attachment <%s> from Mongodb", id)
@@ -150,7 +155,7 @@ func MailList(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) 
 
 func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
 	log.LogTrace("Searching for Mails from Mongodb")
-	maxResults := 250
+	maxResults := 5000
 
 	//we need a user to sign to
 	if ctx.User == nil {
@@ -165,14 +170,14 @@ func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error
 		kind = "subject"
 	}
 
-	query := r.URL.Query().Get("query")
+	query := r.URL.Query().Get("search")
 	if len(query) == 0 {
 		log.LogError("Query is empty '%s', so the full results will be returned", query)
 		query = ".*"
 	}
 
-	sortBy := r.URL.Query().Get("sortBy")
-	sortDirection := r.URL.Query().Get("sortDirection")
+	sortBy := r.URL.Query().Get("sort")
+	sortDirection := r.URL.Query().Get("order")
 
 	messages, total, _ := ctx.Ds.Search(kind, query, 0, maxResults, sortBy, sortDirection)
 
@@ -193,6 +198,64 @@ func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error
 			"title":      "Mails",
 			"messages":   messages,
 		})
+	} else {
+		http.NotFound(w, r)
+		return
+	}
+}
+
+func MailSearch2(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
+	log.LogTrace("Searching for Mails from Mongodb")
+
+	//we need a user to sign to
+	if ctx.User == nil {
+		log.LogTrace("This page requires a login.")
+		ctx.Session.AddFlash("This page requires a login.")
+		return LoginForm(w, r, ctx)
+	}
+
+	kind := r.URL.Query().Get("kind")
+	if kind != "from" && kind != "to" && kind != "subject" && kind != "containing" {
+		log.LogError("Query kind is invalid '%s'", kind)
+		kind = "subject"
+	}
+
+	query := r.URL.Query().Get("search")
+	if len(query) == 0 {
+		log.LogError("Query is empty '%s', so the full results will be returned", query)
+		query = ".*"
+	}
+
+	
+	limit, convErr := strconv.Atoi(r.URL.Query().Get("limit"))
+	if convErr != nil {
+		limit = 100
+	}
+	log.LogTrace("limit: %d", limit)
+
+	offset, convErr := strconv.Atoi(r.URL.Query().Get("offset"))
+	if convErr != nil {
+		offset = 0
+	}
+
+	log.LogTrace("offset: %d", offset)
+
+	sortBy := r.URL.Query().Get("sort")
+	sortDirection := r.URL.Query().Get("order")
+
+	messages, total, _ := ctx.Ds.Search(kind, query, offset, limit, sortBy, sortDirection)
+
+	log.LogInfo("Found %d messages with query '%s'", total, query)
+
+	if err == nil {
+		/* results := &SearchResults{}
+		results.Total = total
+		results.Messages = messages */
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(messages); err != nil {
+			panic(err)
+		}
+		return
 	} else {
 		http.NotFound(w, r)
 		return

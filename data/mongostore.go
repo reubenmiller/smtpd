@@ -209,7 +209,7 @@ func (mongo *MongoDB) Search(kind, query string, start, limit int, sortBy string
 		field = "subject"
 	}
 
-	var sortField = "created"
+	var sortField = "timestamp"
 	switch sortBy {
 	case "created":
 		sortField = "created"
@@ -240,27 +240,53 @@ func (mongo *MongoDB) Search(kind, query string, start, limit int, sortBy string
 	sortField = sortDirectionPrefix + sortField
 
 	log.LogTrace("Searching for message with '%s' on kind '%s'. start: %d, limit %d", query, field, start, limit)
-	err := mongo.Messages.Find(bson.M{ field: bson.RegEx{Pattern: query, Options: "i" }}).Skip(start).Sort(sortField).Limit(limit).Select(bson.M{
-		"id":          1,
-		"from":        1,
-		"to":          1,
-		"attachments": 1,
-		"created":     1,
-		"timestamp":   1,
-		"content":   1,
-		"ip":          1,
-		"subject":     1,
-		"starred":     1,
-		"unread":      1,
-	}).All(messages)
+
+	var err error
+
+	if sortField == "" {
+		log.LogTrace("Search results will not be sorted")
+		err = mongo.Messages.Find(bson.M{ field: bson.RegEx{Pattern: query, Options: "i" }}).Skip(start).Sort("-timestamp").Limit(limit).Select(bson.M{
+			"id":          1,
+			"from":        1,
+			"to":          1,
+			"attachments.filename": 1,
+			"attachments.size": 1,
+			"created":     1,
+			"timestamp":   1,
+			"content.headers.Date":   1,
+			"ip":          1,
+			"subject":     1,
+			"starred":     1,
+			"unread":      1,
+		}).All(messages)
+	} else {
+		log.LogInfo("Sort by: %s", sortField)
+		err = mongo.Messages.Find(bson.M{ field: bson.RegEx{Pattern: query, Options: "i" }}).Skip(start).Sort(sortField).Limit(limit).Select(bson.M{
+			"id":          1,
+			"from":        1,
+			"to":          1,
+			"attachments.filename": 1,
+			"attachments.size": 1,
+			"created":     1,
+			"timestamp":   1,
+			"content.headers.Date":   1,
+			"ip":          1,
+			"subject":     1,
+			"starred":     1,
+			"unread":      1,
+		}).All(messages)
+	}
 
 	if err != nil {
 		log.LogError("Error loading messages: %s", err)
 		return nil, 0, err
 	}
-	count, _ = mongo.Messages.Find(bson.M{field: bson.RegEx{Pattern: query, Options: "i"}}).Count()
+
+	count = len(*messages)
 
 	log.LogInfo("Query results: %d found", count)
+
+	
 
 	return messages, count, nil
 }

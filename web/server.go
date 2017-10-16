@@ -85,6 +85,7 @@ func setupRoutes(cfg config.WebConfig) {
 
 	// Mail
 	r.Path("/mails").Handler(handler(MailSearch)).Name("Mails").Methods("GET")
+	r.Path("/maillist").Handler(handler(MailList)).Name("Mails").Methods("GET")
 	r.Path("/mails/{page:[0-9]+}").Handler(handler(MailList)).Name("MailList").Methods("GET")
 	r.Path("/mail/{id:[0-9a-z]+}").Handler(handler(MailView)).Name("MailView").Methods("GET")
 	r.Path("/mail/attachment/{id:[0-9a-z]+}/{[*.*]}").Handler(handler(MailAttachment)).Name("MailAttachment").Methods("GET")
@@ -92,6 +93,7 @@ func setupRoutes(cfg config.WebConfig) {
 
 	// Search for Mails
 	r.Path("/search").Handler(handler(MailSearch)).Name("#").Methods("GET")
+	r.Path("/search2").Handler(handler(MailSearch2)).Name("#").Methods("GET")
 
 	// Login
 	r.Path("/login").Handler(handler(Login)).Methods("POST")

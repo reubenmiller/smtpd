@@ -36,11 +36,13 @@
                     data-row-attributes="getRowAttributes"
                     data-show-header="true"
                     data-show-pagination-switch="true"
-                    data-pagination-v-align="bottom"
+                    data-pagination-v-align="top"
                     data-show-footer="false"
                     data-pagination="true"
                     data-page-size="25"
-                    data-toggle="table" data-search="true" data-show-columns="true" data-id-field="Id" data-url="/search?kind=subject&query=.*&json=true"
+                    data-side-pagination="client"
+                    data-cache="false"
+                    data-toggle="table" data-search="true" data-show-columns="true" data-id-field="Id" data-url="/search2?search=.*?&limit=2500"
                 >
                     <thead>
                         <tr>
@@ -50,7 +52,7 @@
                             <th data-field="To" data-sortable="true" data-width="15%" data-visible="false" data-searchable="true" data-formatter="formatToMailAddress">To</th>
                             <th data-field="Subject" data-width="40%" data-searchable="true" data-sortable="true">Subject</th>
                             <th data-field="From" data-sortable="true" data-width="15%" data-searchable="true" data-formatter="formatMailAddress">From</th>
-                            <th data-field="EmailDate" data-sortable="true" data-width="15%" data-visible="true">Date</th>
+                            <th data-field="EmailDate" data-sortable="true" data-width="15%" data-sorter="sortDate" data-formatter="formatTimestamp" data-visible="true">Date</th>
                             <th data-field="Created" data-width="15%" data-sortable="true" data-formatter="formatTimestamp" data-sortable="true">Received</th>
                             <th data-field="Attachments" data-width="10%" data-sortable="true" data-formatter="formatAttachment" data-sortable="true">Attachment</th>
                             <th data-field="Unread" data-sortable="true" data-visible="false">Unread</th>

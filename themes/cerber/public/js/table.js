@@ -10,7 +10,7 @@ function formatTimestamp(value, row, index) {
     var currentDate = Date.parse(value);
 
     
-    return currentDate > 1000 ? moment(value).fromNow() : ''; 
+    return currentDate > 0 ? moment(value).fromNow() : ''; 
 }
 
 function formatAttachment(value, row, index) {
@@ -99,14 +99,18 @@ function getRowAttributes(row, index) {
     var type = fields[3];
 
     customRow.EmailType = /(status|service)/i.test(type) ? type : 'ALARM';
-
+    
     try {
-        customRow.EmailDate = row && row.Content.Headers && row.Content.Headers.Date ? moment(new Date(row.Content.Headers.Date[0])).fromNow() : null;
+        customRow.EmailDate = row && row.Content.Headers && row.Content.Headers.Date ? (new Date(row.Content.Headers.Date[0])).toISOString() : '';
     } catch (err) {
         console.error('Error converting date', err);
     }
     
     return customRow;
+}
+
+function sortDate(item1, item2) {
+    console.log("sort:", item1, item2);
 }
 
 $(function() {
