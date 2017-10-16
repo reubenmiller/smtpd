@@ -150,10 +150,7 @@ func MailList(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) 
 
 func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
 	log.LogTrace("Searching for Mails from Mongodb")
-	
-	page, _ := strconv.Atoi(ctx.Vars["page"])
-	limit := 50
-	maxResults := 5000
+	maxResults := 250
 
 	//we need a user to sign to
 	if ctx.User == nil {
@@ -165,28 +162,19 @@ func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error
 	kind := r.URL.Query().Get("kind")
 	if kind != "from" && kind != "to" && kind != "subject" && kind != "containing" {
 		log.LogError("Query kind is invalid '%s'", kind)
-		// w.WriteHeader(400)
 		kind = "subject"
-		// return MailList(w, r, ctx)
 	}
 
 	query := r.URL.Query().Get("query")
 	if len(query) == 0 {
 		log.LogError("Query is empty '%s', so the full results will be returned", query)
 		query = ".*"
-		// return MailList(w, r, ctx)
 	}
 
 	sortBy := r.URL.Query().Get("sortBy")
 	sortDirection := r.URL.Query().Get("sortDirection")
 
 	messages, total, _ := ctx.Ds.Search(kind, query, 0, maxResults, sortBy, sortDirection)
-
-	p := NewPagination(total, limit, page, "/mails")
-	if page > p.Pages() {
-		http.NotFound(w, r)
-		return
-	}
 
 	log.LogInfo("Found %d messages with query '%s'", total, query)
 
@@ -199,26 +187,18 @@ func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error
 				panic(err)
 			}
 			return
-			// return SearchAPI(w, r, messages)
 		}
 		return RenderTemplate("mailbox/_list.v2.html", w, map[string]interface{}{
 			"ctx":        ctx,
 			"title":      "Mails",
 			"messages":   messages,
-			"end":        p.Offset() + p.Limit(),
-			"pagination": p,
 		})
 	} else {
 		http.NotFound(w, r)
 		return
 	}
 }
- 
-/* func SearchAPI(w http.ResponseWriter, r *http.Request, messages *Messages) {
-    if err := json.NewEncoder(w).Encode(messages); err != nil {
-        panic(err)
-    }
-} */
+
 
 func Home(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) {
 	greeting, err := ioutil.ReadFile(config.GetWebConfig().GreetingFile)
