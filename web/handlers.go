@@ -111,7 +111,7 @@ func MailList(w http.ResponseWriter, r *http.Request, ctx *Context) (err error) 
 	log.LogTrace("Loading Mails from Mongodb")
 
 	page, _ := strconv.Atoi(ctx.Vars["page"])
-	limit := 25
+	limit := 200
 
 	//we need a user to sign to
 	if ctx.User == nil {
@@ -165,13 +165,15 @@ func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error
 	if kind != "from" && kind != "to" && kind != "subject" && kind != "containing" {
 		log.LogError("Query kind is invalid '%s'", kind)
 		// w.WriteHeader(400)
-		return MailList(w, r, ctx)
+		kind = "subject"
+		// return MailList(w, r, ctx)
 	}
 
 	query := r.URL.Query().Get("query")
 	if len(query) == 0 {
 		log.LogError("Query is empty '%s', so the full results will be returned", query)
-		return MailList(w, r, ctx)
+		query = ".*"
+		// return MailList(w, r, ctx)
 	}
 
 	sortBy := r.URL.Query().Get("sortBy")

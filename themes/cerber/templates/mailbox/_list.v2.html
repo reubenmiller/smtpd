@@ -3,11 +3,14 @@
 {{define "script"}}
 	<script src="/public/js/jquery-1.11.1.min.js"></script>
 	<script src="/public/js/bootstrap.min.js"></script>
+	<script src="/public/js/FileSaver.min.js"></script>
 	<script src="/public/js/incus.js"></script>
 	<script src="/public/js/notify.js"></script>
 	<script src="/public/js/bootstrap-table.min.js"></script>
 	<script src="/public/js/moment.min.js"></script>
-	<script src="/public/js/table.js"></script>
+    <script src="/public/js/table.js"></script>
+    <script src="/public/js/bootstrap-table-export.js"></script>
+    <script src="/public/js/tableExport.min.js"></script>
 {{end}}
 
 {{define "menu"}}
@@ -17,76 +20,46 @@
 {{end}}
 
 {{define "content"}}
-	<div class="row">
-		<div class="col-md-12">
-			<div class="btn-group">
-				<button type="button" class="btn btn-default">
-					<div class="checkbox1" style="margin: 0; padding: 0; font-size: 9px;">
-						<input type="checkbox">
-					</div>
-				</button>
-				<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-					<span class="caret"></span><span class="sr-only">Toggle Dropdown</span>
-				</button>
-				<ul class="dropdown-menu" role="menu">
-					<li><a href="#">All</a></li>
-					<li><a href="#">None</a></li>
-					<li><a href="#">Read</a></li>
-					<li><a href="/search?kind=subject&query=.*&sortBy=unread&sortDirection=desc">Unread</a></li>
-					<li><a href="#">Starred</a></li>
-					<li><a href="#">Unstarred</a></li>
-				</ul>
-			</div>
-			<button type="button" class="btn btn-default" data-toggle="tooltip" title="Refresh">
-			    &nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-refresh"></span>&nbsp;&nbsp;&nbsp;
-			</button>
-
-			{{if .pagination.Total }}
-				<div class="pull-right">
-					<span class="text-muted"><b>{{if eq .pagination.Offset 0}} 1 {{else}} {{.pagination.Offset }} {{end}}</b> - <b>{{if gt .pagination.Total .end}} {{.end }} {{else}} {{.pagination.Total }} {{end}}</b> of <b>{{.pagination.Total }}</b></span>
-					<div class="btn-group btn-group-sm">{{.pagination.Html 3}}</div>
-				</div>
-			{{end}}
-		</div>
-	</div>
-	<hr>
 	<div id="mails" class="row">
-		<div class="col-md-12">
-			<!-- Nav tabs -->
-			<ul class="nav nav-tabs">
-				<li class="active"><a href="#mails" data-toggle="tab"><span class="glyphicon glyphicon-inbox">
-				</span>Inbox</a></li>
-			</ul>
-			<!-- Tab panes -->
-			<div class="tab-content">
-				<div class="tab-pane fade in active" id="mails">
-                    <div class="table-responsive">
-                    <table
-                        id="tablev2"
-                        data-row-style="rowStyle"
-                        class="list-group"
-                        data-click-to-select="true"
-                        data-sort-stable="true"
-                        data-query-params="queryParams"
-                        data-toggle="table" data-search="true" data-show-columns="true" data-id-field="Id" data-url="/search?kind=subject&query=.*&json=true">
-                            <thead>
-                                <tr>
-                                    <th data-field="-" data-checkbox="true">Selected</th>
-                                    <th data-field="Starred" data-sortable="true" data-formatter="formatStarred">Starred</th>
-                                    <th data-field="Id" data-sortable="true" data-searchable="true" data-visible="false">Id</th>
-                                    <th data-field="To" data-sortable="true" data-visible="false" data-searchable="true" data-formatter="formatToMailAddress">To</th>
-                                    <th data-field="Subject" data-width="25%" data-searchable="true" data-sortable="true">Subject</th>
-                                    <th data-field="From" data-sortable="true" data-searchable="true" data-formatter="formatMailAddress">From</th>
-                                    <th data-field="Timestamp" data-sortable="true" data-formatter="formatTimestamp" data-sortable="true">Timestamp</th>
-                                    <th data-field="Created" data-sortable="true" data-formatter="formatTimestamp" data-sortable="true">Created</th>
-                                    <th data-field="Attachments" data-sortable="true" data-formatter="formatAttachment" data-sortable="true">Attachment</th>
-                                    <th data-field="Unread" data-sortable="true" data-visible="false">Unread</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-				</div>
-			</div>
-		</div>
+        <div class="row">
+            <div class="col-md-12">
+                <table
+                    id="tablev2"
+                    data-row-style="rowStyle"
+                    class="list-group"
+                    data-click-to-select="false"
+                    data-sort-stable="true"
+                    data-query-params="queryParams"
+                    data-show-refresh="true"
+                    data-show-export="true"
+                    data-detail-view="false"
+                    data-row-attributes="getRowAttributes"
+                    data-show-header="true"
+                    data-show-pagination-switch="true"
+                    data-pagination-v-align="bottom"
+                    data-show-footer="false"
+                    data-pagination="true"
+                    data-page-size="25"
+                    data-toggle="table" data-search="true" data-show-columns="true" data-id-field="Id" data-url="/search?kind=subject&query=.*&json=true"
+                >
+                    <thead>
+                        <tr>
+                            <th data-field="-" data-checkbox="true">Selected</th>
+                            <th data-field="Starred" data-width="5%" data-sortable="true" data-visible="true" data-formatter="formatStarred">Starred</th>
+                            <th data-field="Id" data-sortable="true" data-searchable="true" data-visible="false">Id</th>
+                            <th data-field="To" data-sortable="true" data-width="15%" data-visible="false" data-searchable="true" data-formatter="formatToMailAddress">To</th>
+                            <th data-field="Subject" data-width="40%" data-searchable="true" data-sortable="true">Subject</th>
+                            <th data-field="From" data-sortable="true" data-width="15%" data-searchable="true" data-formatter="formatMailAddress">From</th>
+                            <th data-field="Timestamp" data-sortable="true" data-formatter="formatTimestamp" data-sortable="true">Timestamp</th>
+                            <th data-field="Created" data-width="15%" data-sortable="true" data-formatter="formatTimestamp" data-sortable="true">Received</th>
+                            <th data-field="Attachments" data-width="10%" data-sortable="true" data-formatter="formatAttachment" data-sortable="true">Attachment</th>
+                            <th data-field="Unread" data-sortable="true" data-visible="false">Unread</th>
+                            <th data-field="Unitname" data-sortable="true" data-visible="false">Unit Name</th>
+                            <th data-field="EmailType" data-sortable="true" data-visible="false">Email Type</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
 	</div>
 {{end}}

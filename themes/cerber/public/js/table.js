@@ -66,3 +66,38 @@ function queryParams(params) {
     console.log('params', params);
     return params;
 }
+
+/**
+ * Add additional row attributes to the data rows (i.e. minimal parsing)
+ * @param {*} row 
+ * @param {*} index 
+ */
+function getRowAttributes(row, index) {
+    var customRow = row;
+
+    var fields = customRow.Subject.split(' ');
+
+    if (fields.length !== 5) {
+        // Unknown Email format
+        return row;
+    }
+
+    // Get Unitname
+    customRow.Unitname = fields[2];
+
+    // Email Type (i.e. SERVICE, STATUS or ALARM)
+    var type = fields[3];
+
+    customRow.EmailType = /(status|service)/i.test(type) ? type : 'ALARM';
+    return customRow;
+}
+
+$(function() {
+    var $result = $('#tablev2');
+    $('#tablev2')
+        .on('click-row.bs.table', function(e, row, $element, field) {
+            console.log('row', row, field);
+
+            // $result.text()
+        });
+});
