@@ -76,6 +76,7 @@ func (mongo *MongoDB) List(start int, limit int) (*Messages, error) {
 		"from":        1,
 		"to":          1,
 		"attachments": 1,
+		"content":     1,
 		"created":     1,
 		"timestamp":   1,
 		"ip":          1,
@@ -239,13 +240,14 @@ func (mongo *MongoDB) Search(kind, query string, start, limit int, sortBy string
 	sortField = sortDirectionPrefix + sortField
 
 	log.LogTrace("Searching for message with '%s' on kind '%s'. start: %d, limit %d", query, field, start, limit)
-	err := mongo.Messages.Find(bson.M{ field: bson.RegEx{Pattern: query, Options: "i" }}).Skip(start).Limit(limit).Sort(sortField).Select(bson.M{
+	err := mongo.Messages.Find(bson.M{ field: bson.RegEx{Pattern: query, Options: "i" }}).Skip(start).Sort(sortField).Limit(limit).Select(bson.M{
 		"id":          1,
 		"from":        1,
 		"to":          1,
 		"attachments": 1,
 		"created":     1,
 		"timestamp":   1,
+		"content":   1,
 		"ip":          1,
 		"subject":     1,
 		"starred":     1,

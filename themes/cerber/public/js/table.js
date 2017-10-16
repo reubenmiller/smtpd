@@ -32,7 +32,6 @@ function formatAttachment(value, row, index) {
 }
 
 function formatStarred(value, row, index) {
-
     var iconName = value ? 'glyphicon-star' : 'glyphicon-star-empty';
 
     return [
@@ -41,6 +40,17 @@ function formatStarred(value, row, index) {
         '</a> ',
     ].join('');
 }
+
+function formatDetails(value, row, index) {
+        var iconName = value ? 'glyphicon-info-sign' : 'glyphicon-info-sign';
+
+        var href="/mail/" + row.Id;
+        return [
+            '<a href="' + href + '" title="Info">',
+                '<i class="glyphicon ' + iconName + '"></i>',
+            '</a> ',
+        ].join('');
+    }
 
 function cellStyleAttachment(value, row, index, field) {
     return {
@@ -89,6 +99,13 @@ function getRowAttributes(row, index) {
     var type = fields[3];
 
     customRow.EmailType = /(status|service)/i.test(type) ? type : 'ALARM';
+
+    try {
+        customRow.EmailDate = row && row.Content.Headers && row.Content.Headers.Date ? moment(new Date(row.Content.Headers.Date[0])).fromNow() : null;
+    } catch (err) {
+        console.error('Error converting date', err);
+    }
+    
     return customRow;
 }
 
@@ -97,7 +114,5 @@ $(function() {
     $('#tablev2')
         .on('click-row.bs.table', function(e, row, $element, field) {
             console.log('row', row, field);
-
-            // $result.text()
         });
 });

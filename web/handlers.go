@@ -153,6 +153,7 @@ func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error
 	
 	page, _ := strconv.Atoi(ctx.Vars["page"])
 	limit := 50
+	maxResults := 5000
 
 	//we need a user to sign to
 	if ctx.User == nil {
@@ -179,7 +180,7 @@ func MailSearch(w http.ResponseWriter, r *http.Request, ctx *Context) (err error
 	sortBy := r.URL.Query().Get("sortBy")
 	sortDirection := r.URL.Query().Get("sortDirection")
 
-	messages, total, _ := ctx.Ds.Search(kind, query, 0, 100, sortBy, sortDirection)
+	messages, total, _ := ctx.Ds.Search(kind, query, 0, maxResults, sortBy, sortDirection)
 
 	p := NewPagination(total, limit, page, "/mails")
 	if page > p.Pages() {
