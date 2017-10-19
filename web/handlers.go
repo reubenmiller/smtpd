@@ -36,6 +36,8 @@ func MailAttachment(w http.ResponseWriter, r *http.Request, ctx *Context) (err e
 		return LoginForm(w, r, ctx)
 	}
 
+	log.LogInfo("Email id: %s", id)
+
 	m, err := ctx.Ds.LoadAttachment(id)
 	if err != nil {
 		return fmt.Errorf("ID provided is invalid: %v", err)

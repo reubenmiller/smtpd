@@ -8,6 +8,7 @@
 	<script src="/public/js/notify.js"></script>
 	<script src="/public/js/bootstrap-table.min.js"></script>
 	<script src="/public/js/moment.min.js"></script>
+	<script src="/public/js/lodash.min.js"></script>
     <script src="/public/js/table.js"></script>
     <script src="/public/js/bootstrap-table-export.js"></script>
     <script src="/public/js/tableExport.min.js"></script>
@@ -23,8 +24,13 @@
 	<div id="mails" class="row">
         <div class="row">
             <div class="col-md-12">
-                <table
-                    id="tablev2"
+                <div id="toolbar">
+                    <button id="remove" class="btn btn-danger" disabled onclick="deleteMessage()">
+                        <i class="glyphicon glyphicon-remove"></i><span id="removeButtonText">Delete</span> 
+                    </button>
+                </div>
+                <table id="tablev2"
+                    data-toolbar="#toolbar"
                     data-row-style="rowStyle"
                     class="list-group"
                     data-click-to-select="false"
@@ -32,7 +38,6 @@
                     data-query-params="queryParams"
                     data-show-refresh="true"
                     data-show-export="true"
-                    data-detail-view="false"
                     data-row-attributes="getRowAttributes"
                     data-show-header="true"
                     data-show-pagination-switch="true"
@@ -42,6 +47,11 @@
                     data-page-size="25"
                     data-side-pagination="client"
                     data-cache="false"
+                    data-sort-name="Date"
+                    data-detail-view="true"
+                    data-detail-formatter="detailFormatter"
+                    data-show-toggle="true"
+                    data-response-handler="responseHandler"
                     data-toggle="table" data-search="true" data-show-columns="true" data-id-field="Id" data-url="/search2?search=.*?&limit=2500"
                 >
                     <thead>
@@ -52,7 +62,7 @@
                             <th data-field="To" data-sortable="true" data-width="15%" data-visible="false" data-searchable="true" data-formatter="formatToMailAddress">To</th>
                             <th data-field="Subject" data-width="40%" data-searchable="true" data-sortable="true">Subject</th>
                             <th data-field="From" data-sortable="true" data-width="15%" data-searchable="true" data-formatter="formatMailAddress">From</th>
-                            <th data-field="EmailDate" data-sortable="true" data-width="15%" data-sorter="sortDate" data-formatter="formatTimestamp" data-visible="true">Date</th>
+                            <th data-field="Timestamp" data-sortable="true" data-width="15%" data-order="desc" data-formatter="formatTimestamp" data-visible="true">Date</th>
                             <th data-field="Created" data-width="15%" data-sortable="true" data-formatter="formatTimestamp" data-sortable="true">Received</th>
                             <th data-field="Attachments" data-width="10%" data-sortable="true" data-formatter="formatAttachment" data-sortable="true">Attachment</th>
                             <th data-field="Unread" data-sortable="true" data-visible="false">Unread</th>
